@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/tv_clear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/edt_search"
+        android:layout_alignParentRight="true"
+        android:padding="8dp"
+        android:text="Clear"
+        android:textColor="#4e5663"
+        android:textSize="16sp"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <EditText
+        android:id="@+id/edt_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/tv_clear"
+        android:background="@drawable/bg_search"
+        android:drawableLeft="@drawable/ic_find"
+        android:drawablePadding="3dp"
+        android:hint="Search"
+        android:imeOptions="actionDone"
+        android:maxLines="1"
+        android:textColor="#4e5663"
+        android:textColorHint="#adb0b6"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+</RelativeLayout>
