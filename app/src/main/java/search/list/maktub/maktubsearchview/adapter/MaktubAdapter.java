@@ -11,10 +11,12 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Filter;
 import android.widget.TextView;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 import search.list.maktub.maktublistsearchview.R;
@@ -25,18 +27,23 @@ import search.list.maktub.maktubsearchview.utils.ObjectMain;
 /**
  * Created by Maktub on 7/19/2016.
  */
-public class MaktubAdapter<T> extends ArrayAdapter<T> {
+public class MaktubAdapter extends ArrayAdapter<ObjectMain> {
     private Activity activity;
-    private List<T> mList;
-    DisplayMetrics displayMetrics;
+    private List<ObjectMain> mList;
+    private DisplayMetrics displayMetrics;
     private onActionSearch mActionSearch;
     private String mKeyClearSearch = "Clear";
+    private ItemFilter mFilter = new ItemFilter();
+    private List<ObjectMain> mOriginalData = new ArrayList<>();
+    private List<ObjectMain> mFilteredData = new ArrayList<>();
 
-    public MaktubAdapter(Activity activity, List<T> list) {
+    public MaktubAdapter(Activity activity, List<ObjectMain> list) {
         super(activity, 0, list);
         this.activity = activity;
         mList = list;
         displayMetrics = new DisplayMetrics();
+        this.mFilteredData = list;
+        this.mOriginalData.addAll(list);
         activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
     }
 
@@ -65,9 +72,9 @@ public class MaktubAdapter<T> extends ArrayAdapter<T> {
             holder = (MaktubHolder) convertView.getTag();
         }
         if (position > 0)
-            holder.bindData((ObjectMain) mList.get(position));
+            holder.bindData(mFilteredData.get(position));
         else {
-            if (mList.get(0) != null && ((ObjectMain) mList.get(0)).getName() != null && ((ObjectMain) mList.get(0)).getName().equalsIgnoreCase(mKeyClearSearch) && holder.mEdtSearch != null) {
+            if (mList.get(0) != null && (mList.get(0)).getName() != null && ((mList.get(0)).getName().equalsIgnoreCase(mKeyClearSearch) && holder.mEdtSearch != null)) {
                 holder.mEdtSearch.setText("");
                 holder.mTvClear.setVisibility(View.GONE);
             }
@@ -77,7 +84,6 @@ public class MaktubAdapter<T> extends ArrayAdapter<T> {
 
     private class MaktubHolder extends MaktubViewHolder<ObjectMain> {
         TextView tvGroupName;
-//        RelativeLayout layoutContainer;
         EditText mEdtSearch;
         TextView mTvClear;
 
@@ -85,12 +91,6 @@ public class MaktubAdapter<T> extends ArrayAdapter<T> {
             super(root);
             if (position > 0) {
                 tvGroupName = findViewById(R.id.tl_title);
-//                int width = displayMetrics.widthPixels;
-//                AbsListView.LayoutParams params = new AbsListView.LayoutParams(
-//                        RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-//                params.width = width;
-//                params.height = (width * 8) / 15;
-//                layoutContainer.setLayoutParams(params);
             } else {
                 mEdtSearch = findViewById(R.id.edt_search);
                 mEdtSearch.setImeOptions(EditorInfo.IME_ACTION_DONE);
@@ -173,5 +173,49 @@ public class MaktubAdapter<T> extends ArrayAdapter<T> {
     public void clearSearchContent() {
         ((ObjectMain) mList.get(0)).setName(mKeyClearSearch);
         notifyDataSetChanged();
+    }
+
+    public Filter getFilter() {
+        return mFilter;
+    }
+
+    public void resetDataSearch() {
+        mFilteredData.clear();
+        mFilteredData.addAll(mOriginalData);
+        notifyDataSetChanged();
+    }
+
+    private class ItemFilter extends Filter {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            String filterString = constraint.toString().toLowerCase();
+            FilterResults results = new FilterResults();
+            final List<ObjectMain> list = mOriginalData;
+            int count = list.size();
+            final ArrayList<ObjectMain> nlist = new ArrayList<>(count);
+            String filterableString;
+            for (int i = 0; i < count; i++) {
+                filterableString = list.get(i).getName();
+                if (filterableString.toLowerCase().contains(filterString)) {
+                    nlist.add(list.get(i));
+                }
+            }
+
+            results.values = nlist;
+            results.count = nlist.size();
+
+            return results;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            mFilteredData.clear();
+            // Add item default . This is search view.
+            mFilteredData.add(new ObjectMain(""));
+            mFilteredData.addAll((ArrayList<ObjectMain>) results.values);
+//            mFilteredData = (ArrayList<ObjectMain>) results.values;
+            notifyDataSetChanged();
+        }
     }
 }
